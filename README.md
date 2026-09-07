@@ -13,15 +13,88 @@ Switch convention used throughout: **ON = closed (switch up)** , **OFF = open (s
 | **S5** | C-13 | 8 | Default PLATO load file; default ASCII baud rate |
 | **S2** | G-11 | 10 | Communications interface and terminal configuration |
 | **ROM** | *(controller board)* | 4 | ROM socket presence (ROMs 1–4) |
-| **Front panel** | Operator panel | 6 (+ DATA/TALK) | Diagnostics, mode, and operator controls |
+| **Front panel** | Operator panel | 6 rockers + controls/LEDs | Diagnostics, mode, brightness, comms status |
 
 ---
 
-## Front panel switches
+## Current switch configuration
 
-Six rocker switches behind the protective door on the operator panel, plus the **DATA/TALK** slide switch (modem-equipped units only).
+As found on this terminal (documented 2026-09-06). **ON** = switch up/closed, **OFF** = switch down/open.
 
-### Documented functions (1979 manual)
+### ROM presence (4-position)
+
+| Pos | 1 | 2 | 3 | 4 |
+|-----|---|---|---|---|
+| **State** | OFF | OFF | OFF | OFF |
+
+All positions OFF → **no ROMs indicated as present** in sockets 1–4. Verify against actual chips installed; positions should match physical ROM population.
+
+### S5 at C-13 (8-position)
+
+| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|-----|---|---|---|---|---|---|---|---|
+| **State** | OFF | ON | ON | ON | ON | ON | ON | ON |
+
+| Setting | Decoded value | Notes |
+|---------|---------------|-------|
+| Default PLATO load file (pos 1–4) | **Ambiguous** | Pos 2 & 4 agree (ON); pos 1 & 3 disagree (OFF / ON). Closest match is **load file 1** (requires 1 & 3 OFF, 2 & 4 ON) — pos 3 may be out of agreement with its redundant pair. |
+| Default ASCII baud rate (pos 6–8) | **75 bps** | All three ON |
+| Pos 5 | *(unused)* | ON |
+
+### S2 at G-11 (10-position)
+
+| Pos | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|-----|---|---|---|---|---|---|---|---|---|---|
+| **State** | ON | ON | ON | OFF | ON | ON | ON | OFF | ON | ON |
+
+| Pos | Decoded setting |
+|-----|-----------------|
+| 1 | DTR **constant** |
+| 2 | **RS-232** interface |
+| 3–5 | PLATO transmit rate **75 bps** (3=ON, 4=OFF, 5=ON) |
+| 6 | Internal PLATO modem **present** |
+| 7 | **Primary** transmit channel |
+| 8 | Diagnostic loop **off** |
+| 9 | Touch panel **present** |
+| 10 | **32K** program memory |
+
+> For direct RS-232 host connection at 1200 bps, S2 positions 3–5 would normally be set for 1200 bps (4=ON, 5=OFF) rather than the current 75 bps. The current S2/S5 settings are consistent with a reverse-channel or modem-based site configuration rather than a direct 1200 bps PLATO host link.
+
+---
+
+## Front panel
+
+Controls, indicators, and switches on the operator panel (figure 2-1 in the 1979 manual).
+
+### Controls
+
+| Control | Type | Function |
+|---------|------|----------|
+| **Power ON/OFF** | Rocker switch | Main power and circuit breaker. Allow ~45 s after power-on for CRT warmup. |
+| **Brightness** | Knob | Adjusts display brightness. Avoid setting too high — reduces focus and shortens CRT life. |
+| **RESET** | Push button | Momentary press: re-initializes logic, checksums controlware blocks, auto-reloads any blocks in error. Hold **> 3 seconds**: full logic init, runs resident diagnostics (per rocker switch settings), and autoloads controlware from the PLATO system. |
+| **DATA / TALK** | Slide switch | *(Internal modem units only.)* **TALK** routes the phone line to the handset; **DATA** routes it to the internal modem. Set to **DATA** after dial-up connection; set to **TALK** to disconnect. |
+
+### Status LEDs
+
+Six red LEDs on the front panel, left to right as observed on this unit:
+
+| LED | Label | Function |
+|-----|-------|----------|
+| | **ERR** | Lit when the controller detects an error condition. See maintenance manual section 6 for error codes. |
+| | **XMT** | Monitors transmitted data at the shift register output. **Lit** = space (logical 0); **off** = mark (logical 1). |
+| | **RCV** | Monitors received data (after carrier detect / DSR gating). **Lit** = space (logical 0); **off** = mark (logical 1). |
+| | **RTS** | Request to Send. Normally **lit** when not in test mode. |
+| | **DGR** | Likely **DSR** (Data Set Ready) — follows the DSR signal from the PLATO interface connector or internal modem. Lit when modem/interface is ready. |
+| | **DTR** | Data Terminal Ready. Normally **lit** when the terminal is powered on. |
+
+All six LEDs can be forced on by pressing and holding **RESET**.
+
+### Rocker switches (behind protective door)
+
+Six rocker switches behind the protective door on the operator panel.
+
+#### Documented functions (1979 manual)
 
 | Switch | ON / up position | OFF / down position | Notes |
 |--------|------------------|---------------------|-------|
@@ -31,11 +104,9 @@ Six rocker switches behind the protective door on the operator panel, plus the *
 | **TEST / SKIP** | TEST — run resident diagnostics | SKIP — bypass diagnostics, proceed to controlware autoload | Use with LOOP/EXIT |
 | *(2 switches)* | *Unassigned in 1979 manual* | *Do not affect operation* | |
 
-**DATA/TALK** (slide switch, internal modem only): **TALK** routes the phone line to the handset; **DATA** routes it to the internal modem.
+Normal operating position: **TEST/SKIP = SKIP**, **LOOP/EXIT = EXIT**, **KB-TP/SKIP = SKIP**.
 
-Hold **RESET** > 3 seconds to enter resident diagnostics (respecting TEST/SKIP and LOOP/EXIT). Normal operating position: **TEST/SKIP = SKIP**, **LOOP/EXIT = EXIT**, **KB-TP/SKIP = SKIP**.
-
-### Observed panel labels (physical unit)
+#### Observed panel labels (physical unit)
 
 Some IST-II units label additional switches not described in the 1979 manual. Labels observed on this terminal:
 
